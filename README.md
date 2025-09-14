@@ -290,6 +290,16 @@ clm add-chat "💬 Private chat"
 
 ---
 
+**I was inspired by my other projects:**
+
+[smartpasslib](https://github.com/smartlegionlab/smartpasslib) - A cross-platform Python library for generating deterministic, secure passwords that never need to be stored.
+
+[clipassman](https://github.com/smartlegionlab/clipassman) - Cross-platform console Smart Password manager and generator.
+
+[Smart Babylon Library](https://github.com/smartlegionlab/smart-babylon-library) - A Python library inspired by the Babylonian Library and my concept of smart passwords. It generates unique addresses for texts without physically storing them, allowing you to retrieve information using these addresses.
+
+---
+
 ## 📜 License & Disclaimer
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)**.
