@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chrono-library-messenger"
+version = "0.1.2"
+description = "Messenger without data transmission"
+authors = [
+    {name = "A.A Suvorov", email = "smartlegiondev@gmail.com"}
+]
+license = "AGPL-3.0-or-later"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Security",
+    "Topic :: Security :: Cryptography",
+    "Intended Audience :: End Users/Desktop",
+    "Environment :: Console",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/smartlegionlab/chrono-library-messenger"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[project.scripts]
+clm = "clm.cli:main"
