@@ -1,5 +1,4 @@
 # Copyright © 2025, Alexander Suvorov
-# Chrono-Library Messenger (CLM)
 import argparse
 import hmac
 import hashlib
@@ -76,7 +75,7 @@ def get_chat_name(chat_id):
     chats = get_chats()
     if chat_id in chats:
         return chats[chat_id]["name"]
-    return f"Чат {chat_id}"
+    return f"Chat {chat_id}"
 
 
 def get_chat_seed_suffix(chat_id):
@@ -191,11 +190,14 @@ def receive_message(payload_str):
         message_bytes = encrypt_decrypt(ciphertext, key_bytes)
         signed_message = message_bytes.decode('utf-8')
 
-        save_received_message(chat_id, epoch_index, signed_message, payload_str)
+        if ": " not in signed_message:
+            return None, "❌ Decryption successful but the message format is invalid. Likely wrong chat or seed."
 
+        save_received_message(chat_id, epoch_index, signed_message, payload_str)
         return signed_message, None
+
     except UnicodeDecodeError:
-        return None, "❌ Decryption error. Possibly invalid chat or seed phrase.."
+        return None, "❌ Decryption error. Possible reasons: invalid master seed, wrong chat, or corrupted pointer."
 
 
 def format_message(msg, show_payload=False):
@@ -212,37 +214,53 @@ def format_message(msg, show_payload=False):
     return formatted_msg
 
 
-def show_history(filter_chat=None, show_payloads=False):
+def show_history(filter_chat=None, show_payloads=False, limit=0):
     history = get_message_history()
 
     if not history:
         print("📭 Message history is empty")
         return
 
+    if filter_chat:
+        history = [msg for msg in history if msg['chat_id'] == filter_chat]
+
+    if limit > 0:
+        history = history[-limit:]
+
     print()
     for msg in history:
-        if filter_chat and msg['chat_id'] != filter_chat:
-            continue
-
         print(format_message(msg, show_payloads))
+
+    print(f"\n📊 Total messages: {len(history)}")
 
 
 def show_chats():
     chats = get_chats()
     print("💬 Available chats:")
-    for cid, chat_info in chats.items():
+    for cid, chat_info in sorted(chats.items(), key=lambda x: int(x[0])):
         print(f"  {cid}: {chat_info['name']}")
+    print(f"\n📊 Total chats: {len(chats)}")
 
 
 def add_chat(chat_name, seed_suffix=None):
+    if not chat_name.strip():
+        print("❌ Chat name cannot be empty")
+        return False
+
     chats = get_chats()
-    new_id = str(max([int(k) for k in chats.keys()] + [0]) + 1)
+
+    numeric_ids = []
+    for k in chats.keys():
+        if k.isdigit():
+            numeric_ids.append(int(k))
+
+    new_id = str(max(numeric_ids) + 1) if numeric_ids else '0'
 
     if seed_suffix is None:
         seed_suffix = f"chat_{new_id}"
 
     chats[new_id] = {
-        "name": chat_name,
+        "name": chat_name.strip(),
         "seed_suffix": seed_suffix
     }
 
@@ -250,6 +268,41 @@ def add_chat(chat_name, seed_suffix=None):
         json.dump(chats, f, ensure_ascii=False, indent=2)
 
     print(f"✅ New chat added: {new_id}: {chat_name}")
+    return True
+
+
+def export_profile(path):
+    try:
+        import shutil
+        export_path = Path(path) / "clm_profile_backup"
+        shutil.copytree(CONFIG_DIR, export_path, dirs_exist_ok=True)
+        print(f"✅ Profile exported to: {export_path}")
+        return True
+    except Exception as e:
+        print(f"❌ Export failed: {e}")
+        return False
+
+
+def import_profile(path):
+    try:
+        import shutil
+        import_path = Path(path)
+        if not import_path.exists():
+            print("❌ Import path does not exist")
+            return False
+
+        if CONFIG_DIR.exists():
+            backup_path = CONFIG_DIR.parent / "clm_backup_old"
+            shutil.copytree(CONFIG_DIR, backup_path, dirs_exist_ok=True)
+            shutil.rmtree(CONFIG_DIR)
+
+        shutil.copytree(import_path, CONFIG_DIR)
+        print(f"✅ Profile imported from: {import_path}")
+        print("📦 Old profile backed up to:", {backup_path})
+        return True
+    except Exception as e:
+        print(f"❌ Import failed: {e}")
+        return False
 
 
 def main():
@@ -273,6 +326,7 @@ def main():
     parser_history = subparsers.add_parser('history', help='Show chat history')
     parser_history.add_argument('--chat', type=str, help='Filter by chat')
     parser_history.add_argument('--show-pointers', action='store_true', help='Show public signs')
+    parser_history.add_argument('--limit', type=int, default=0, help='Limit number of messages to show')
 
     parser_chats = subparsers.add_parser('chats', help='Show chat list')
 
@@ -280,13 +334,25 @@ def main():
     parser_add_chat.add_argument('name', type=str, help='Chat name')
     parser_add_chat.add_argument('--seed-suffix', type=str, help='Unique suffix for seed (optional)')
 
+    parser_export = subparsers.add_parser('export', help='Export profile backup')
+    parser_export.add_argument('path', type=str, help='Path to export backup')
+
+    parser_import = subparsers.add_parser('import', help='Import profile backup')
+    parser_import.add_argument('path', type=str, help='Path to import backup from')
+
     args = parser.parse_args()
 
     if args.command == 'setup':
-        config = {
-            'username': args.username,
-            'master_seed': args.master_seed
+        if not args.username.strip():
+            print("❌ Username cannot be empty")
+            return
+        if not args.master_seed.strip():
+            print("❌ Master seed cannot be empty")
+            return
 
+        config = {
+            'username': args.username.strip(),
+            'master_seed': args.master_seed.strip()
         }
         save_config(config)
         print("✅ Configuration saved!")
@@ -318,13 +384,22 @@ def main():
             print(f"\n{message}")
 
     elif args.command == 'history':
-        show_history(args.chat, args.show_pointers)
+        show_history(args.chat, args.show_pointers, args.limit)
 
     elif args.command == 'chats':
         show_chats()
 
     elif args.command == 'add-chat':
         add_chat(args.name, args.seed_suffix)
+
+    elif args.command == 'export':
+        export_profile(args.path)
+
+    elif args.command == 'import':
+        if input("❓ This will overwrite your current profile. Continue? (y/N): ").lower() == 'y':
+            import_profile(args.path)
+        else:
+            print("❌ Import cancelled")
 
 
 if __name__ == "__main__":
