@@ -1,4 +1,4 @@
-# Chrono-Library Messenger (CLM) <sup>v0.1.2</sup>
+# Chrono-Library Messenger (CLM) <sup>v0.1.3</sup>
 
 ---
 
@@ -241,6 +241,18 @@ clm history --chat 1
 # Create new chat
 clm add-chat "💬 Private chat"
 ```
+
+## New commands:
+
+### Delete/Soft delete/Clear chats and messages
+
+- `clm delete-chat <chat_id> - delete chat and all messages`
+- `clm delete-message <id> - delete message (to trash)`
+- `clm delete-message <id> --permanent - delete permanently`
+- `clm restore-message <id> - restore message`
+- `clm clear-history --chat <chat_id> - clear chat history`
+- `clm history --show-ids - show message IDs`
+- `clm history --show-deleted - show deleted messages`
 
 ---
 

@@ -83,31 +83,55 @@ class ChronoLibrarian:
         except UnicodeDecodeError:
             return None, "❌ Decryption error"
 
-    def format_message(self, msg: dict, show_payload: bool = False) -> str:
+    def format_message(self, msg: dict, show_payload: bool = False, show_ids: bool = False) -> str:
         chat_name = self.get_chat_name(msg['chat_id'])
         time_str = datetime.fromtimestamp(msg['timestamp']).strftime("%Y-%m-%d %H:%M:%S")
         direction = "📤" if msg['type'] == 'sent' else "📥"
-        formatted = f"{direction} [{time_str}] {chat_name}:\n{msg['message']}\n"
-        if show_payload and msg['type'] == 'sent':
+
+        status = " 🗑️" if msg.get('is_deleted', 0) == 1 else ""
+        message_id = f" [#{msg['id']}]" if show_ids and 'id' in msg else ""
+
+        formatted = f"{direction}{message_id}{status} [{time_str}] {chat_name}:\n{msg['message']}\n"
+
+        if show_payload and msg['type'] == 'sent' and msg.get('is_deleted', 0) == 0:
             formatted += f"   Pointer: {msg['payload']}\n"
+
         return formatted
 
-    def show_history(self, filter_chat: Optional[str] = None, show_payloads: bool = False, limit: int = 0):
-        messages = self.db.get_messages(filter_chat, limit)
+    def show_history(self, filter_chat: Optional[str] = None, show_payloads: bool = False,
+                     limit: int = 0, show_ids: bool = False, include_deleted: bool = False):
+        messages = self.db.get_messages(filter_chat, limit, include_deleted)
         if not messages:
             print("📭 No messages")
             return
+
         for msg in messages:
-            print(self.format_message(msg, show_payloads))
-        total = self.db.get_message_count(filter_chat)
-        print(f"\n📊 {len(messages)} of {total} messages")
+            print(self.format_message(msg, show_payloads, show_ids))
+
+        total = self.db.get_message_count(filter_chat, include_deleted)
+        active = self.db.get_message_count(filter_chat, False)
+        deleted = total - active
+
+        stats = f"\n📊 Showing {len(messages)} of {total} messages"
+        if deleted > 0:
+            stats += f" ({active} active, {deleted} deleted)"
+        print(stats)
 
     def show_chats(self):
         chats = self.db.get_chats()
         print("💬 Chats:")
         for cid, chat_info in sorted(chats.items(), key=lambda x: int(x[0])):
-            print(f"  {cid}: {chat_info['name']}")
-        print(f"📊 Total: {len(chats)}")
+            message_count = self.db.get_message_count(cid, False)
+            total_count = self.db.get_message_count(cid, True)
+            deleted_count = total_count - message_count
+
+            stats = f" ({message_count} messages"
+            if deleted_count > 0:
+                stats += f", {deleted_count} deleted"
+            stats += ")"
+
+            print(f"  {cid}: {chat_info['name']}{stats}")
+        print(f"📊 Total: {len(chats)} chats")
 
     def add_chat(self, chat_name: str, seed_suffix: Optional[str] = None) -> bool:
         if not chat_name.strip():
@@ -125,6 +149,85 @@ class ChronoLibrarian:
         print(f"✅ Chat added: {new_id}: {chat_name}")
         return True
 
+    def delete_chat(self, chat_id: str):
+        chat_name = self.get_chat_name(chat_id)
+        message_count = self.db.get_message_count(chat_id, True)
+
+        print(f"⚠️  Chat: {chat_id}: {chat_name}")
+        print(f"⚠️  Messages: {message_count} total messages")
+
+        confirm = input("❌ Delete this chat and ALL its messages? (y/N): ")
+        if confirm.lower() == 'y':
+            self.db.delete_chat(chat_id)
+            print(f"✅ Chat {chat_id} deleted")
+        else:
+            print("❌ Deletion cancelled")
+
+    def delete_message(self, message_id: int, permanent: bool = False):
+        messages = self.db.get_messages(None, 0, True)
+        target_msg = None
+
+        for msg in messages:
+            if msg['id'] == message_id:
+                target_msg = msg
+                break
+
+        if not target_msg:
+            print(f"❌ Message #{message_id} not found")
+            return
+
+        chat_name = self.get_chat_name(target_msg['chat_id'])
+        time_str = datetime.fromtimestamp(target_msg['timestamp']).strftime("%Y-%m-%d %H:%M:%S")
+
+        print(f"⚠️  Message #{message_id}:")
+        print(f"   Chat: {target_msg['chat_id']}: {chat_name}")
+        print(f"   Time: {time_str}")
+        print(f"   Type: {target_msg['type']}")
+        print(f"   Content: {target_msg['message'][:50]}...")
+
+        action = "permanently delete" if permanent else "delete"
+        confirm = input(f"❌ {action.capitalize()} this message? (y/N): ")
+
+        if confirm.lower() == 'y':
+            if permanent:
+                self.db.permanent_delete_message(message_id)
+                print(f"✅ Message #{message_id} permanently deleted")
+            else:
+                self.db.delete_message(message_id)
+                print(f"✅ Message #{message_id} moved to trash")
+        else:
+            print("❌ Deletion cancelled")
+
+    def restore_message(self, message_id: int):
+        messages = self.db.get_messages(None, 0, True)
+        target_msg = None
+
+        for msg in messages:
+            if msg['id'] == message_id and msg.get('is_deleted', 0) == 1:
+                target_msg = msg
+                break
+
+        if not target_msg:
+            print(f"❌ Deleted message #{message_id} not found")
+            return
+
+        self.db.restore_message(message_id)
+        print(f"✅ Message #{message_id} restored")
+
+    def clear_chat_history(self, chat_id: str):
+        chat_name = self.get_chat_name(chat_id)
+        message_count = self.db.get_message_count(chat_id, True)
+
+        print(f"⚠️  Chat: {chat_id}: {chat_name}")
+        print(f"⚠️  Messages: {message_count} total messages")
+
+        confirm = input("❌ PERMANENTLY delete ALL messages in this chat? (y/N): ")
+        if confirm.lower() == 'y':
+            self.db.clear_chat_history(chat_id)
+            print(f"✅ All messages in chat {chat_id} deleted")
+        else:
+            print("❌ Deletion cancelled")
+
     def setup_config(self, username: str, master_seed: str):
         if not username.strip() or not master_seed.strip():
             raise ValueError("❌ Username and seed required")
@@ -137,33 +240,42 @@ def main():
     parser = argparse.ArgumentParser(description='Chrono-Library Messenger')
     subparsers = parser.add_subparsers(dest='command', required=True)
 
-    # Setup
     parser_setup = subparsers.add_parser('setup', help='Initial setup')
     parser_setup.add_argument('--username', required=True, help='Your username')
     parser_setup.add_argument('--master-seed', required=True, help='Master seed phrase')
 
-    # Send
     parser_send = subparsers.add_parser('send', help='Send message')
     parser_send.add_argument('message', help='Message text')
     parser_send.add_argument('--chat', default='1', help='Chat ID')
 
-    # Receive
     parser_recv = subparsers.add_parser('receive', help='Receive message')
     parser_recv.add_argument('payload', help='Pointer JSON')
 
-    # History
     parser_history = subparsers.add_parser('history', help='Show history')
     parser_history.add_argument('--chat', help='Filter by chat')
     parser_history.add_argument('--show-pointers', action='store_true', help='Show pointers')
+    parser_history.add_argument('--show-ids', action='store_true', help='Show message IDs')
+    parser_history.add_argument('--show-deleted', action='store_true', help='Include deleted messages')
     parser_history.add_argument('--limit', type=int, default=0, help='Limit messages')
 
-    # Chats
     subparsers.add_parser('chats', help='List chats')
 
-    # Add chat
     parser_add_chat = subparsers.add_parser('add-chat', help='Add new chat')
     parser_add_chat.add_argument('name', help='Chat name')
     parser_add_chat.add_argument('--seed-suffix', help='Seed suffix')
+
+    parser_delete_chat = subparsers.add_parser('delete-chat', help='Delete chat and all messages')
+    parser_delete_chat.add_argument('chat_id', help='Chat ID to delete')
+
+    parser_delete_msg = subparsers.add_parser('delete-message', help='Delete message')
+    parser_delete_msg.add_argument('message_id', type=int, help='Message ID to delete')
+    parser_delete_msg.add_argument('--permanent', action='store_true', help='Permanent deletion')
+
+    parser_restore_msg = subparsers.add_parser('restore-message', help='Restore deleted message')
+    parser_restore_msg.add_argument('message_id', type=int, help='Message ID to restore')
+
+    parser_clear = subparsers.add_parser('clear-history', help='Clear chat history')
+    parser_clear.add_argument('--chat', required=True, help='Chat ID to clear')
 
     args = parser.parse_args()
 
@@ -180,11 +292,20 @@ def main():
             message, error = clm.receive_message(args.payload)
             print(error if error else f"✅ Message:\n{message}")
         elif args.command == 'history':
-            clm.show_history(args.chat, args.show_pointers, args.limit)
+            clm.show_history(args.chat, args.show_pointers, args.limit,
+                             args.show_ids, args.show_deleted)
         elif args.command == 'chats':
             clm.show_chats()
         elif args.command == 'add-chat':
             clm.add_chat(args.name, args.seed_suffix)
+        elif args.command == 'delete-chat':
+            clm.delete_chat(args.chat_id)
+        elif args.command == 'delete-message':
+            clm.delete_message(args.message_id, args.permanent)
+        elif args.command == 'restore-message':
+            clm.restore_message(args.message_id)
+        elif args.command == 'clear-history':
+            clm.clear_chat_history(args.chat)
     except Exception as e:
         print(f"❌ Error: {e}")
 
