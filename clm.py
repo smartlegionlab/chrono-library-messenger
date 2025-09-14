@@ -48,26 +48,26 @@ def ensure_config():
     RECEIVED_DIR.mkdir(exist_ok=True)
 
     if not CONFIG_FILE.exists():
-        with open(CONFIG_FILE, 'w') as f:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump({"username": "", "master_seed": ""}, f)
 
     if not CHATS_FILE.exists():
-        with open(CHATS_FILE, 'w') as f:
+        with open(CHATS_FILE, 'w', encoding='utf-8') as f:
             json.dump(DEFAULT_CHATS, f, ensure_ascii=False, indent=2)
 
 
 def get_config():
-    with open(CONFIG_FILE, 'r') as f:
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
 def save_config(config):
-    with open(CONFIG_FILE, 'w') as f:
+    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2)
 
 
 def get_chats():
-    with open(CHATS_FILE, 'r') as f:
+    with open(CHATS_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -98,7 +98,7 @@ def save_sent_message(chat_id, epoch_index, message, payload):
         'datetime': datetime.fromtimestamp(epoch_index).isoformat()
     }
 
-    with open(filename, 'w') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
@@ -115,7 +115,7 @@ def save_received_message(chat_id, epoch_index, message, payload):
         'datetime': datetime.fromtimestamp(epoch_index).isoformat()
     }
 
-    with open(filename, 'w') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
@@ -123,11 +123,11 @@ def get_message_history():
     history = []
 
     for file in SENT_DIR.glob("*.json"):
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding='utf-8') as f:
             history.append(json.load(f))
 
     for file in RECEIVED_DIR.glob("*.json"):
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding='utf-8') as f:
             history.append(json.load(f))
 
     return sorted(history, key=lambda x: x['timestamp'])
@@ -264,7 +264,7 @@ def add_chat(chat_name, seed_suffix=None):
         "seed_suffix": seed_suffix
     }
 
-    with open(CHATS_FILE, 'w') as f:
+    with open(CHATS_FILE, 'w', encoding='utf-8') as f:
         json.dump(chats, f, ensure_ascii=False, indent=2)
 
     print(f"✅ New chat added: {new_id}: {chat_name}")
@@ -291,6 +291,7 @@ def import_profile(path):
             print("❌ Import path does not exist")
             return False
 
+        backup_path = None
         if CONFIG_DIR.exists():
             backup_path = CONFIG_DIR.parent / "clm_backup_old"
             shutil.copytree(CONFIG_DIR, backup_path, dirs_exist_ok=True)
@@ -298,7 +299,8 @@ def import_profile(path):
 
         shutil.copytree(import_path, CONFIG_DIR)
         print(f"✅ Profile imported from: {import_path}")
-        print("📦 Old profile backed up to:", {backup_path})
+        if backup_path:
+            print("📦 Old profile backed up to:", backup_path)
         return True
     except Exception as e:
         print(f"❌ Import failed: {e}")
@@ -328,7 +330,7 @@ def main():
     parser_history.add_argument('--show-pointers', action='store_true', help='Show public signs')
     parser_history.add_argument('--limit', type=int, default=0, help='Limit number of messages to show')
 
-    parser_chats = subparsers.add_parser('chats', help='Show chat list')
+    subparsers.add_parser('chats', help='Show chat list')
 
     parser_add_chat = subparsers.add_parser('add-chat', help='Add new chat')
     parser_add_chat.add_argument('name', type=str, help='Chat name')
