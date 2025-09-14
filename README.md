@@ -20,6 +20,40 @@ CLM implements a radical new communication paradigm. **There is no act of data t
 
 You don't send messages. You **publish coordinates**. The recipient **recreates the message locally** using the same coordinates and shared secret.
 
+Great addition! Here's an expanded version that highlights these key benefits.
+
+---
+
+### 🧠 How it works: Magic without data transfer
+
+CLM implements a radically new communication paradigm. **There is no act of data transfer.** Instead, two parties synchronously extract information from a shared, predetermined pseudo-random data stream - the "Eternal Library" - using public "pointers".
+
+You don't send messages. You **publish coordinates**. The recipient **recreates the message locally** using the same coordinates and a shared secret.
+
+#### How does it work?
+
+1. **Eternal Library:** A shared seed generates a deterministic, infinite pseudo-random sequence - our "library".
+2. **Library Partitions (Chats):** Each chat has a unique seed suffix, creating an isolated "partition" within the library.
+3. **The "sending" process:**
+* Your message is automatically signed with your username.
+* The encryption key is generated from the combination: `master phrase + chat_suffix + timestamp`.
+* The signed message is encrypted with this key (XORed) and turned into ciphertext.
+* Only the **pointer** is published - the JSON object `{"c": "chat_id", "e": timestamp, "d": "ciphertext"}`.
+4. **The "receiving" process:**
+* The receiver finds the pointer.
+* Using the identical master phrase and chat suffix, it **recreates the same key** for the specified timestamp.
+* It applies the key to the ciphertext (XORed again) and decrypts the original signed message: `@username: Your message here`.
+
+**The message never left the sender's device.** Only the pointer was transmitted to the recipient's device. The message itself was "extracted" from the shared, pre-synchronized data structure.
+
+#### 🛡️ Key benefits and implications:
+
+* **💨 Bypassing blocking:** No internet or mobile connection is required for exchange**. Pointers can be transmitted **in any way**: written on a piece of paper, sent via SMS, posted on social networks, transmitted via messengers, QR code or radio signal.
+* **👻 Metadata anonymity:** The pointer looks like a random set of data. For an outside observer, it is **impossible to prove** that this is a message at all and not technical garbage.
+* **🛡️ Resistance to attacks:** Classic attacks (MITM, DDoS) are meaningless. **It is impossible to intercept or replace a message** — you can only prevent the transmission of a pointer, which can be easily sent another way. There is no central server that can be attacked.
+* **📦 Locality and sovereignty:** All data is stored only on your device. **No providers, servers, or third parties** that can access your correspondence.
+* **⏳ Eternity:** A message can be decrypted years and decades after it was sent. It is enough to save the common master phrase and pointer. No dependence on working services or protocol updates.
+
 ## How It Works
 
 1.  **The Eternal Library:** A shared master seed phrase generates deterministic, infinite pseudorandom sequences.
