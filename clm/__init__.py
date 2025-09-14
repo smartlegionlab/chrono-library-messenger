@@ -4,6 +4,6 @@ Chrono-Library Messenger - A messaging protocol without data transmission.
 Communication through synchronized extraction from an Eternal Library.
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "Alexander Suvorov"
 __email__ = "smartlegiondev@gmail.com"

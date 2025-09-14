@@ -1,4 +1,4 @@
-# Chrono-Library Messenger (CLM) <sup>v0.1.3</sup>
+# Chrono-Library Messenger (CLM) <sup>v0.1.4</sup>
 
 ---
 
@@ -19,8 +19,6 @@
 CLM implements a radical new communication paradigm. **There is no act of data transmission.** Instead, two parties synchronously extract information from a shared, predetermined pseudorandom sequence (the "Eternal Library") using public "pointers."
 
 You don't send messages. You **publish coordinates**. The recipient **recreates the message locally** using the same coordinates and shared secret.
-
-Great addition! Here's an expanded version that highlights these key benefits.
 
 ---
 
@@ -48,7 +46,7 @@ You don't send messages. You **publish coordinates**. The recipient **recreates 
 
 #### 🛡️ Key benefits and implications:
 
-* **💨 Bypassing blocking:** No internet or mobile connection is required for exchange**. Pointers can be transmitted **in any way**: written on a piece of paper, sent via SMS, posted on social networks, transmitted via messengers, QR code or radio signal.
+* **💨 Does not require internet:** No internet or mobile connection is required for exchange**. Pointers can be transmitted **in any way**: written on a piece of paper, sent via SMS, posted on social networks, transmitted via messengers, QR code or radio signal.
 * **👻 Metadata anonymity:** The pointer looks like a random set of data. For an outside observer, it is **impossible to prove** that this is a message at all and not technical garbage.
 * **🛡️ Resistance to attacks:** Classic attacks (MITM, DDoS) are meaningless. **It is impossible to intercept or replace a message** — you can only prevent the transmission of a pointer, which can be easily sent another way. There is no central server that can be attacked.
 * **📦 Locality and sovereignty:** All data is stored only on your device. **No providers, servers, or third parties** that can access your correspondence.
@@ -315,3 +313,15 @@ This project is licensed under the **GNU Affero General Public License v3.0 (AGP
 > This tool is intended for educational and research purposes to explore new paradigms in communication. The authors are not responsible for how it is used.
 
 For commercial use that is not compatible with the AGPLv3 terms (e.g., including this software in a proprietary product without disclosing the source code), a **commercial license** is required. Please contact me at [smartlegiondev@gmail.com](mailto:smartlegiondev@gmail.com) to discuss terms.
+
+---
+
+**📜 Legal & Ethical Disclaimer:**
+
+Chrono-Library Messenger (CLM) is a proof-of-concept project created for academic, research, 
+and educational purposes only. It is designed to explore alternative paradigms in communication technology. 
+The author does not encourage or condone the use of this tool for any illegal activities 
+or to violate the laws of any country. The mention of other messaging services is 
+made for comparative analysis within a technological context and constitutes fair use. 
+Users are solely responsible for ensuring their compliance with all applicable local, 
+national, and international laws and regulations.
