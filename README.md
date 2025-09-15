@@ -1,4 +1,4 @@
-# Chrono-Library Messenger (CLM) <sup>v0.1.4</sup>
+# Chrono-Library Messenger (CLM) <sup>v1.0.1</sup>
 
 ---
 
@@ -295,24 +295,6 @@ clm add-chat "💬 Private chat"
 [clipassman](https://github.com/smartlegionlab/clipassman) - Cross-platform console Smart Password manager and generator.
 
 [Smart Babylon Library](https://github.com/smartlegionlab/smart-babylon-library) - A Python library inspired by the Babylonian Library and my concept of smart passwords. It generates unique addresses for texts without physically storing them, allowing you to retrieve information using these addresses.
-
----
-
-## 📜 License & Disclaimer
-
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)**.
-
-- You are free to use, modify, and distribute this software.
-- **However, if you modify this software and run it as a hosted service (e.g., a web app), you MUST make the full source code of your modified version available to your users under the same license.**
-- The full license text can be found in the [LICENSE](https://github.com/smartlegionlab/chrono-library-messenger/blob/master/LICENSE) file.
-
-### ⚠️ Important Disclaimer
-
-> **THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
->
-> This tool is intended for educational and research purposes to explore new paradigms in communication. The authors are not responsible for how it is used.
-
-For commercial use that is not compatible with the AGPLv3 terms (e.g., including this software in a proprietary product without disclosing the source code), a **commercial license** is required. Please contact me at [smartlegiondev@gmail.com](mailto:smartlegiondev@gmail.com) to discuss terms.
 
 ---
 
