@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chrono-library-messenger"
-version = "2.0.0"
+version = "2.0.1"
 description = "Messenger without data transmission"
 authors = [
     {name = "A.A Suvorov", email = "smartlegiondev@gmail.com"}
@@ -35,4 +35,4 @@ Homepage = "https://github.com/smartlegionlab/chrono-library-messenger"
 where = ["."]
 
 [project.scripts]
-clm = "clm.cli:main"
+clm = "clm.__main__:main"

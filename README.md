@@ -1,4 +1,4 @@
-# Chrono-Library Messenger (CLM) <sup>v2.0.0</sup>
+# Chrono-Library Messenger (CLM) <sup>v2.0.1</sup>
 
 [![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/chrono-library-messenger)](https://github.com/smartlegionlab/chrono-library-messenger)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/chrono-library-messenger?label=pypi%20downloads)](https://pypi.org/project/chrono-library-messenger/)
